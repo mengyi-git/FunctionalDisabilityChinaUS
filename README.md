@@ -10,7 +10,7 @@ Use `main.m` for model estimation and simulation.
 Use `main_plot.m` to plot figures in the paper.
 
 Use `main_cf.m` to calculate the estimated transition rates in the following papers
-  * 
+  * Hanewald, K., Li, H., & Shao, A. (2019). Modelling multi-state health transitions in China: A generalised linear model with time trends. Annals of Actuarial Science, 13(1), 145-165. doi:10.1017/S1748499518000167
 
 # Acknowledgement
 The following functions are from external sources.
