@@ -6,28 +6,28 @@ The code accompanies the paper "Functional Disability with Systematic Trends and
 
 We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. Health and Retirement Study (HRS) to estimate the model parameters. The datasets are saved in `clhls_transit.csv` and `rndhrs_transit.csv`, respectively. The meaning of the variables in each dataset is displayed below.
 
-| Variable Name | Variable Meaning                                                    |        CLHLS       |         HRS        |
-|---------------|---------------------------------------------------------------------|:------------------:|:------------------:|
-| `ID`          | Individual identifier                                               | :heavy_check_mark: |                    |
-| `HHIDPN`      | Individual identifier                                               |                    | :heavy_check_mark: |
-| `RAFEMALE`    | Gender (=1 if female)                                               | :heavy_check_mark: | :heavy_check_mark: |
-| `JOINURBAN`   | Residence when joining the survey (=1 if urban, rural otherwise)    | :heavy_check_mark: |                    |
-| `JOINWAVE`    | Wave when joining the survey                                        | :heavy_check_mark: |                    |
-| `HACOHORT`    | Sample cohort                                                       |                    | :heavy_check_mark: |
-| `RxHSTATE`    | Health   state at time t<sub>i</sub>                                | :heavy_check_mark: | :heavy_check_mark: |
-| `RxHSTATE2`   | Health   state at time t<sub>i+1</sub>                              | :heavy_check_mark: | :heavy_check_mark: |
-| `TIME`        | Time t<sub>i</sub>                                                  | :heavy_check_mark: | :heavy_check_mark: |
-| `TAU`         | Duration (in year) between time t<sub>i</sub> and   t<sub>i+1</sub> | :heavy_check_mark: | :heavy_check_mark: |
-| `RxAGE`       | Age last birthday at time t<sub>i</sub>                             | :heavy_check_mark: | :heavy_check_mark: |
-| `RxAGE2`      | Age last birthday at time t<sub>i+1</sub>                           | :heavy_check_mark: | :heavy_check_mark: |
-| `RxAGETRS`    | Age at which the transition occurs (=-1 if no transition occurs)    | :heavy_check_mark: | :heavy_check_mark: |
-| `TIMETRS`     | Time at which the transition occurs (=-1 if no transition occurs)   | :heavy_check_mark: | :heavy_check_mark: |
-| `Y_S1`        | Transition indicator (=1 if transition type 1 is observed)          | :heavy_check_mark: | :heavy_check_mark: |
-| `Y_S2`        | Transition indicator (=1 if transition type 2 is observed)          | :heavy_check_mark: | :heavy_check_mark: |
-| `Y_S3`        | Transition indicator (=1 if transition type 3 is observed)          | :heavy_check_mark: | :heavy_check_mark: |
-| `Y_S4`        | Transition indicator (=1 if transition type 4 is observed)          | :heavy_check_mark: | :heavy_check_mark: |
-| `R_H`         | Exposure indicator (=1 if in the healthy state)                     | :heavy_check_mark: | :heavy_check_mark: |
-| `R_D`         | Exposure indicator (=1 if in the disabled state)                    | :heavy_check_mark: | :heavy_check_mark: |
+| Variable Name | Variable Meaning                                                                                   |        CLHLS       |         HRS        |
+|---------------|----------------------------------------------------------------------------------------------------|:------------------:|:------------------:|
+| `ID`          | Individual identifier                                                                              | :heavy_check_mark: |                    |
+| `HHIDPN`      | Individual identifier                                                                              |                    | :heavy_check_mark: |
+| `RAFEMALE`    | Gender (=1 if female)                                                                              | :heavy_check_mark: | :heavy_check_mark: |
+| `JOINURBAN`   | Residence when joining the survey (=1 if urban, =0 if rural)                                       | :heavy_check_mark: |                    |
+| `JOINWAVE`    | Wave when joining the survey                                                                       | :heavy_check_mark: |                    |
+| `HACOHORT`    | Sample cohort                                                                                      |                    | :heavy_check_mark: |
+| `RxHSTATE`    | Health   state at time t<sub>i</sub>                                                               | :heavy_check_mark: | :heavy_check_mark: |
+| `RxHSTATE2`   | Health   state at time t<sub>i+1</sub>                                                             | :heavy_check_mark: | :heavy_check_mark: |
+| `TIME`        | Time t<sub>i</sub>                                                                                 | :heavy_check_mark: | :heavy_check_mark: |
+| `TAU`         | Duration (in year) between time t<sub>i</sub> and   t<sub>i+1</sub>                                | :heavy_check_mark: | :heavy_check_mark: |
+| `RxAGE`       | Age last birthday at time t<sub>i</sub>                                                            | :heavy_check_mark: | :heavy_check_mark: |
+| `RxAGE2`      | Age last birthday at time t<sub>i+1</sub>                                                          | :heavy_check_mark: | :heavy_check_mark: |
+| `RxAGETRS`    | Age at which the transition occurs (=`RxAGE2` if transition occurs, =-1   if no transition occurs) | :heavy_check_mark: | :heavy_check_mark: |
+| `TIMETRS`     | Time at which the transition occurs (=-1 if no transition occurs)                                  | :heavy_check_mark: | :heavy_check_mark: |
+| `Y_S1`        | Transition indicator (=1 if transition type 1 is observed)                                         | :heavy_check_mark: | :heavy_check_mark: |
+| `Y_S2`        | Transition indicator (=1 if transition type 2 is observed)                                         | :heavy_check_mark: | :heavy_check_mark: |
+| `Y_S3`        | Transition indicator (=1 if transition type 3 is observed)                                         | :heavy_check_mark: | :heavy_check_mark: |
+| `Y_S4`        | Transition indicator (=1 if transition type 4 is observed)                                         | :heavy_check_mark: | :heavy_check_mark: |
+| `R_H`         | Exposure indicator (=1 if in the healthy state)                                                    | :heavy_check_mark: | :heavy_check_mark: |
+| `R_D`         | Exposure indicator (=1 if in the disabled state)                                                   | :heavy_check_mark: | :heavy_check_mark: |
 
 Transition type definition
   * 1: healthy to disabled
