@@ -362,6 +362,7 @@ end
 
 %% Estimated rates vs. Li et al. (2017) and Sherris and Wei (2020)
 % **static model** and **trend model**
+% see main_cf.m for the plot using the frailty model
 
 clear
 
