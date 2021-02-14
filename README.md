@@ -10,7 +10,7 @@ We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. He
 |---------------|---------------------------------------------------------------------|:------------------:|:------------------:|
 | `ID`          | Individual identifier                                               | :heavy_check_mark: |                    |
 | `HHIDPN`      | Individual identifier                                               |                    | :heavy_check_mark: |
-| `RAFEMALE`    | Gender (=1 if female)                                               |                    |                    |
+| `RAFEMALE`    | Gender (=1 if female)                                               | :heavy_check_mark: | :heavy_check_mark: |
 | `JOINURBAN`   | Residence when joining the survey (=1 if urban, rural otherwise)    | :heavy_check_mark: |                    |
 | `JOINWAVE`    | Wave when joining the survey                                        | :heavy_check_mark: |                    |
 | `HACOHORT`    | Sample cohort                                                       |                    | :heavy_check_mark: |
@@ -36,8 +36,8 @@ Transition type definition
   * 4: disabled to dead
 
 Exposure indicator
-  * If `R_H=1', then the individual is exposed to the risk of transition types 1 and 3.
-  * If `R_D=1', then the individual is exposed to the risk of transition types 2 and 4.
+  * If `R_H=1`, then the individual is exposed to the risk of transition types 1 and 3.
+  * If `R_D=1`, then the individual is exposed to the risk of transition types 2 and 4.
 
 # How to use the code
 Use `main.m` for model estimation and simulation. Note that to estimate the trend model, one needs to estimate the static model first since the initial values used in estimating the trend model depend on the estimated parameters of the static model. Similarly, the trend model needs to be estimated before estimating the frailty model. 
