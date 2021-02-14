@@ -1,7 +1,10 @@
 # Introduction
 
+The code accompanies the paper "Functional Disability with Systematic Trends and Uncertainty: A Comparison between China and the U.S." by Fu, Sherris and Xu. We also provide the datasets (saved in `clhls_transit.csv` and `rndhrs_transit.csv`) used for model estimation.
 
 # Datasets
+
+
 
 
 # How to use the code
