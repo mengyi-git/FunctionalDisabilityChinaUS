@@ -14,12 +14,12 @@ We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. He
 | JOINURBAN     | Residence when joining the survey (=1 if urban, rural otherwise)    | :heavy_check_mark: |                    |
 | JOINWAVE      | Wave when joining the survey                                        | :heavy_check_mark: |                    |
 | HACOHORT      | Sample cohort                                                       |                    | :heavy_check_mark: |
-| RxHSTATE      | Healthy   state at time t<sup>i</sup>                               | :heavy_check_mark: | :heavy_check_mark: |
-| RxHSTATE2     | Healthy   state at time t<sup>i+1</sup>                             | :heavy_check_mark: | :heavy_check_mark: |
-| TIME          | Time t<sup>i</sup>                                                  | :heavy_check_mark: | :heavy_check_mark: |
-| TAU           | Duration (in year) between time t<sup>i</sup> and   t<sup>i+1</sup> | :heavy_check_mark: | :heavy_check_mark: |
-| RxAGE         | Age last birthday at time t<sup>i</sup>                             | :heavy_check_mark: | :heavy_check_mark: |
-| RxAGE2        | Age last birthday at time t<sup>i+1</sup>                           | :heavy_check_mark: | :heavy_check_mark: |
+| RxHSTATE      | Healthy   state at time t<sub>i</sub>                               | :heavy_check_mark: | :heavy_check_mark: |
+| RxHSTATE2     | Healthy   state at time t<sub>i+1</sub>                             | :heavy_check_mark: | :heavy_check_mark: |
+| TIME          | Time t<sub>i</sub>                                                  | :heavy_check_mark: | :heavy_check_mark: |
+| TAU           | Duration (in year) between time t<sub>i</sub> and   t<sub>i+1</sub> | :heavy_check_mark: | :heavy_check_mark: |
+| RxAGE         | Age last birthday at time t<sub>i</sub>                             | :heavy_check_mark: | :heavy_check_mark: |
+| RxAGE2        | Age last birthday at time t<sub>i+1</sub>                           | :heavy_check_mark: | :heavy_check_mark: |
 | RxAGETRS      | Age at which the transition occurs (=-1 if no transition occurs)    | :heavy_check_mark: | :heavy_check_mark: |
 | TIMETRS       | Time at which the transition occurs (=-1 if no transition occurs)   | :heavy_check_mark: | :heavy_check_mark: |
 | Y_S1          | Transition indicator (=1 if transition type 1 is observed)          | :heavy_check_mark: | :heavy_check_mark: |
