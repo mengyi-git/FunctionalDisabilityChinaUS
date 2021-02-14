@@ -4,7 +4,9 @@ The code accompanies the paper "Functional Disability with Systematic Trends and
 
 # Datasets
 
-We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. Health and Retirement Study (HRS) to estimate the model parameters. The datasets are saved in `clhls_transit.csv` and `rndhrs_transit.csv`, respectively. The meaning of the variables in each dataset is displayed below.
+We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. Health and Retirement Study (HRS) to estimate the model parameters. The CLHLS data is downloaded from https://doi.org/10.3886/ICPSR36692.v1. It requires some data cleaning before it can be used. Please see https://github.com/mengyi-git/clhls_data_clean for the data cleaning procedure. The HRS data is downloaded from https://hrsdata.isr.umich.edu/data-products/rand. It has been cleaned by the RAND Center for the Study of Aging.
+
+The datasets are saved in `clhls_transit.csv` and `rndhrs_transit.csv`, respectively. The meaning of the variables in each dataset is displayed below.
 
 | Variable Name | Variable Meaning                                                                                   |        CLHLS       |         HRS        |
 |---------------|----------------------------------------------------------------------------------------------------|:------------------:|:------------------:|
