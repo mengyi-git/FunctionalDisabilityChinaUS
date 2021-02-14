@@ -10,9 +10,9 @@ Use `main.m` for model estimation and simulation.
 Use `main_plot.m` to plot figures in the paper.
 
 Use `main_cf.m` to calculate the estimated transition rates in the following papers
-  * Zixi Li, Adam W. Shao & Michael Sherris (2017) The Impact of Systematic Trend and Uncertainty on Mortality and Disability in a Multistate Latent Factor Model for Transition Rates, *North American Actuarial Journal*, 21(4), 594-610, DOI: 10.1080/10920277.2017.1330157
+  * Zixi Li, Adam W. Shao & Michael Sherris (2017) The impact of systematic trend and uncertainty on mortality and disability in a multistate latent factor model for transition rates, *North American Actuarial Journal*, 21(4), 594-610, DOI: 10.1080/10920277.2017.1330157[https://doi.org/10.1080/10920277.2017.1330157]
   * Hanewald, K., Li, H., & Shao, A. (2019). Modelling multi-state health transitions in China: A generalised linear model with time trends. *Annals of Actuarial Science*, 13(1), 145-165. doi:10.1017/S1748499518000167
-  * Michael Sherris & Pengyu Wei (2020) A Multi-state Model of Functional Disability and Health Status in the Presence of Systematic Trend and Uncertainty, *North American Actuarial Journal*, DOI: 10.1080/10920277.2019.1708755
+  * Michael Sherris & Pengyu Wei (2020) A multi-state model of functional disability and health status in the presence of systematic trend and uncertainty, *North American Actuarial Journal*, DOI: 10.1080/10920277.2019.1708755[https://doi.org/10.1080/10920277.2019.1708755]
 
 # Acknowledgement
 The following functions are from external sources.
