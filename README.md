@@ -7,7 +7,7 @@ The code accompanies the paper "Functional Disability with Systematic Trends and
 We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. Health and Retirement Study (HRS) to estimate the model parameters. The datasets are saved in `clhls_transit.csv` and `rndhrs_transit.csv`, respectively. 
 
 | Variable Name |                          Variable Meaning                         |        CLHLS       |         HRS        |
-|---------------|:-----------------------------------------------------------------:|:------------------:|:------------------:|
+|---------------|-------------------------------------------------------------------|:------------------:|:------------------:|
 | ID            | Individual identifier                                             | :heavy_check_mark: |                    |
 | HHIDPN        | Individual identifier                                             |                    | :heavy_check_mark: |
 | RAFEMALE      | Gender (=1 if female)                                             |                    |                    |
