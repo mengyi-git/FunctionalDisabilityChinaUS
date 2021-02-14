@@ -39,6 +39,16 @@ Exposure indicator
   * If `R_H=1`, then the individual is exposed to the risk of transition types 1 and 3.
   * If `R_D=1`, then the individual is exposed to the risk of transition types 2 and 4.
 
+Time t<sub>i</sub> is the latest of
+  * date of reaching age x
+  * date of joining the survey
+  * date of observing health transitions.
+
+Time t<sub>i+1</sub> is the earliest of
+  * date of reaching age x+1
+  * date of exiting the survey
+  * date of observing health transitions.
+
 # How to use the code
 Use `main.m` for model estimation and simulation. Note that to estimate the trend model, one needs to estimate the static model first since the initial values used in estimating the trend model depend on the estimated parameters of the static model. Similarly, the trend model needs to be estimated before estimating the frailty model. 
 
@@ -59,3 +69,6 @@ The following functions are from external sources.
   * Raymond Reynolds (2021). Plot confidence intervals (https://www.mathworks.com/matlabcentral/fileexchange/13103-plot-confidence-intervals), MATLAB Central File Exchange. Retrieved February 14, 2021.
 * `./plotFiles/rgb.m` is written by Chad A. Greene
   * Chad Greene (2021). Intuitive RGB color values from XKCD (https://www.mathworks.com/matlabcentral/fileexchange/46872-intuitive-rgb-color-values-from-xkcd), MATLAB Central File Exchange. Retrieved February 14, 2021.
+
+# Questions and comments
+If you have trouble running the code or have better ideas to improve the code, please [log an issue](https://github.com/mengyi-git/FunctionalDisabilityChinaUS/issues).
