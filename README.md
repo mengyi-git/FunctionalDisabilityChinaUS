@@ -1,6 +1,16 @@
 # Introduction
 
 
+# Datasets
+
+
+# How to use the code
+Use `main.m` for model estimation and simulation.
+
+Use `main_plot.m` to plot figures in the paper.
+
+Use `main_cf.m` to calculate the estimated transition rates in the following papers
+  * 
 
 # Acknowledgement
 The following functions are from external sources.
