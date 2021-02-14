@@ -4,11 +4,11 @@ The code accompanies the paper "Functional Disability with Systematic Trends and
 
 # Datasets
 
-
+We use the Chinese Longitudinal Healthy Longevity Survey (CLHLS) and the U.S. Health and Retirement Study (HRS) to estimate the model parameters.
 
 
 # How to use the code
-Use `main.m` for model estimation and simulation.
+Use `main.m` for model estimation and simulation. Note that to estimate the trend model, one needs to estimate the static model first since the initial values used in estimating the trend model depend on the estimated parameters of the static model. Similarly, the trend model needs to be estimated before estimating the frailty model. 
 
 Use `main_plot.m` to plot figures in the paper.
 
