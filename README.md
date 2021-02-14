@@ -52,7 +52,7 @@ Time t<sub>i+1</sub> is the earliest of
   * date of observing health transitions.
 
 # How to use the code
-Use `main.m` for model estimation and simulation. Note that to estimate the trend model, one needs to estimate the static model first since the initial values used in estimating the trend model depend on the estimated parameters of the static model. Similarly, the trend model needs to be estimated before estimating the frailty model. 
+Use `main.m` for model estimation, simulation, and the likelihood ratio test. Note that to estimate the trend model, one needs to estimate the static model first since the initial values used in estimating the trend model depend on the estimated parameters of the static model. Similarly, the trend model needs to be estimated before estimating the frailty model. 
 
 Use `main_plot.m` to plot figures in the paper.
 
