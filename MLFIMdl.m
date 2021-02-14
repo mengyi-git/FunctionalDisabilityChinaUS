@@ -120,13 +120,13 @@ classdef MLFIMdl
         
 % -------------------------------------------------------------------------
 		
-		function obj = set.rho00(obj, newRho)
-			if isnumeric(newRho) && numel(newRho) == 1
-				obj.rho00 = newRho;
-			else
-				error('Initial value of rho should be a number');
-			end
+	function obj = set.rho00(obj, newRho)
+		if isnumeric(newRho) && numel(newRho) == 1
+			obj.rho00 = newRho;
+		else
+			error('Initial value of rho should be a number');
 		end
+	end
         
 % -------------------------------------------------------------------------
         
@@ -145,7 +145,7 @@ classdef MLFIMdl
         
 % -------------------------------------------------------------------------
 		
-		function obj = set.thetaHat(obj, newTheta)
+	function obj = set.thetaHat(obj, newTheta)
             obj.thetaHat = newTheta;
         end
         
@@ -195,7 +195,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------
 
         function etaSim = get.etaSim(obj)
-		%Simulate the white noise in the latent process
+	%Simulate the white noise in the latent process
 			% eta ~ NIID(0, Q)
 			% eta: N x N_SIM
 			% Q: N x N
@@ -245,9 +245,9 @@ classdef MLFIMdl
                 matName = obj.model;
             else
                 matName = obj.latent;
-				if MLFIMdl.isResid(obj.model)
-					matName = [matName, '_resid'];
-				end
+		if MLFIMdl.isResid(obj.model)
+			matName = [matName, '_resid'];
+		end
 
             end
         end
@@ -326,11 +326,11 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------
  
         function thetaNo = get.thetaNo(obj)
-			if strcmp(obj.latent, 'ar')
-				thetaNo = [(obj.m + 1)*obj.S, 1];
-			else
-				thetaNo = [(obj.m + 1)*obj.S, 0];
-			end
+		if strcmp(obj.latent, 'ar')
+			thetaNo = [(obj.m + 1)*obj.S, 1];
+		else
+			thetaNo = [(obj.m + 1)*obj.S, 0];
+		end
         end
 
 % -------------------------------------------------------------------------
@@ -340,7 +340,7 @@ classdef MLFIMdl
 % =========================================================================
         
         function [x, rho] = getCoef(obj, theta, thetaNo)
-		%Get coef and rho: used in negloglik_frailty()
+	%Get coef and rho: used in negloglik_frailty()
             if numel(theta) ~= sum(thetaNo)
                 error('No. of parameters in theta does''t match!')
             end
@@ -372,7 +372,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------        
         
         function X = getX(obj, datatable, type)
-		%Get covariates, used in estimating parameters and recovering psi
+	%Get covariates, used in estimating parameters and recovering psi
 
             [AGE, AGETRS, FEMALE, ~, TIME, TIMETRS] = MLFIMdl.importAGT(datatable);
             
@@ -427,7 +427,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------        
 
         function loglambda = cal_loglambda(obj, theta, X)
-		%Calculate log transition rate
+	%Calculate log transition rate
             params = reshape(theta, [obj.S, numel(theta)/obj.S]);
             loglambda = params * X;
         end
@@ -439,7 +439,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------        
 
         function theta_input = findInitTheta_input(obj)
-		%Obtain the input to determine theta0
+	%Obtain the input to determine theta0
 			% empty for the static model
 			% trend model <-- static model
 			% frailty model <-- trend model
@@ -534,7 +534,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------        
 
         function path = simFrailtyPath(obj, rho, wn)
-		%Simulate latent process paths used for estimation
+	%Simulate latent process paths used for estimation
 		
             phi = rho .^ obj.deltaT;
             
@@ -556,7 +556,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------        
         
         function output = negloglik(obj, datatable, theta, thetaNo)
-		%Wrap negloglik_noFrailty and negloglik_frailty
+	%Wrap negloglik_noFrailty and negloglik_frailty
         
             if any(strcmp(obj.model, {'frailty', 'frailty_resid'}))
                 % frailty model
@@ -571,7 +571,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------        
       
         function output = negloglik_noFrailty(obj, datatable, theta)
-		%Calculate the negative log likelihood function for non-frailty models
+	%Calculate the negative log likelihood function for non-frailty models
 
             TAU = datatable.TAU;
 
@@ -596,7 +596,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------
 
         function obj = estTheta(obj, datatable)
-		% Estimate the parameters
+	%Estimate the parameters
 		
 			% 1. Obtain the initial values
             theta0 = findInitTheta_uniVar(obj, datatable);
@@ -717,6 +717,8 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------
 
         function [psi_hat, kf_V] = recoverPsi(obj, datatable)
+	%Recover the frailty process
+	
             if strcmp(obj.latent, 'ar')
                 error('The code is written for the random walk process')
             end
@@ -1058,7 +1060,7 @@ classdef MLFIMdl
 
 % -------------------------------------------------------------------------   
         
-		function trsRateCell = calTrsRate(obj, Input)
+	function trsRateCell = calTrsRate(obj, Input)
         %Calculate transition rate matrix using estimated parameters
             % save in a cell
         
@@ -1093,8 +1095,8 @@ classdef MLFIMdl
         function trsProbCell = calTrsProb(obj, Input)
         %Calculate transition probability using estimated parameters
 
-			ageBeg = Input.ageBeg;
-			ageEnd = Input.ageEnd;
+	    ageBeg = Input.ageBeg;
+	    ageEnd = Input.ageEnd;
             n = ageEnd - ageBeg + 1;
             trsProbCell = cell(n, 2); % Col 1: age; Col 2: trs rate matrix
             
@@ -1145,8 +1147,8 @@ classdef MLFIMdl
         % Simulate health state path
             trsProbCell = calTrsProb(obj, Input);
 
-			ageBeg = Input.ageBeg;
-			ageEnd = Input.ageEnd;
+	    ageBeg = Input.ageBeg;
+	    ageEnd = Input.ageEnd;
             n = ageEnd - ageBeg + 1;
             
             if ~isvector(initHVector)
@@ -1181,15 +1183,15 @@ classdef MLFIMdl
     
     methods (Static)
         
-		function output = isResid(model)
-		% The model with residence always end with '_resid'
+	function output = isResid(model)
+	% The model with residence always end with '_resid'
 
-			newStr = split(model, '_');
-			if strcmp(newStr{end}, 'resid')
-				output = 1;
-			else
-				output = 0;
-			end
+		newStr = split(model, '_');
+		if strcmp(newStr{end}, 'resid')
+			output = 1;
+		else
+			output = 0;
+		end
         end		  
         
 % -------------------------------------------------------------------------
@@ -1264,15 +1266,15 @@ classdef MLFIMdl
 	
         function [AGE, AGETRS, FEMALE, TAU, TIME, TIMETRS] = importAGT(datatable)		
 			
-			AGE = MLFIMdl.transformAge(datatable.RxAGE);
-			AGETRS = MLFIMdl.transformAge(datatable.RxAGETRS);
+	    AGE = MLFIMdl.transformAge(datatable.RxAGE);
+	    AGETRS = MLFIMdl.transformAge(datatable.RxAGETRS);
 
             FEMALE = datatable.RAFEMALE;
 
             TAU = datatable.TAU;
 
-			TIME = MLFIMdl.transformTime(datatable.TIME);
-			TIMETRS = MLFIMdl.transformTime(datatable.TIMETRS);
+	    TIME = MLFIMdl.transformTime(datatable.TIME);
+	    TIMETRS = MLFIMdl.transformTime(datatable.TIMETRS);
         end
         
 % -------------------------------------------------------------------------    
@@ -1303,25 +1305,25 @@ classdef MLFIMdl
 % -------- Analyse estimated parameters	-----------------------------------
 % -------------------------------------------------------------------------    
 
-		function se = calStdErr(hessian)
-		%Calculate standard errors given the hessian matrix
-		
-			% check positive definite
-			try 
-                chol(hessian);
-			%	disp('Calculate the standard error')
-            catch
-				disp('Matrix is not symmetric positive definite')
-			end
+	function se = calStdErr(hessian)
+	%Calculate standard errors given the hessian matrix
 
-			fisher = inv(hessian);
-			se = sqrt(diag(fisher));		
+		% check positive definite
+		try 
+			chol(hessian);
+		%	disp('Calculate the standard error')
+    		catch
+			disp('Matrix is not symmetric positive definite')
+		end
+
+		fisher = inv(hessian);
+		se = sqrt(diag(fisher));		
         end
         
 % -------------------------------------------------------------------------    
 		
         function pval = calPVal(theta, se)
-		%Calculate p-value
+	%Calculate p-value
             % hypothesis test
             wald = theta ./ se;
             pval = 1 - normcdf(abs(wald)); % p-value
@@ -1329,18 +1331,18 @@ classdef MLFIMdl
         
 % -------------------------------------------------------------------------    
         
-		function star = calSignt(pval)
-		%Match p-value to stars
+	function star = calSignt(pval)
+	%Match p-value to stars
 
-			if pval < 0.01 
-				star = '$^{***}$';
-			elseif pval < 0.05
-				star = '$^{**}$';
-			elseif pval < 0.1
-				star = '$^{*}$';
-			else
-				star = '';
-			end
+		if pval < 0.01 
+			star = '$^{***}$';
+		elseif pval < 0.05
+			star = '$^{**}$';
+		elseif pval < 0.1
+			star = '$^{*}$';
+		else
+			star = '';
+		end
 
         end
         
@@ -1351,7 +1353,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------    
 
         function newT = mergeFrailtyPath(t, iFrailty, oldT)
-		%Merge simulated frailty path with oldT based on TIME
+	%Merge simulated frailty path with oldT based on TIME
 
             frailtyTable = table;
             frailtyTable.TIME = t;
@@ -1362,19 +1364,19 @@ classdef MLFIMdl
 		
 % -------------------------------------------------------------------------    
 		
-		function newAge = transformAge(oldAge)
-			newAge = (oldAge - 65)/10;
-		end
+	function newAge = transformAge(oldAge)
+		newAge = (oldAge - 65)/10;
+	end
 		
 % -------------------------------------------------------------------------
 
-		function newTime = transformTime(oldTime)
-			denom = 10;
-			if numel(num2str(oldTime(1))) == 4 % 4-digit year format
-				newTime = (oldTime - MLFIMdl.year_t1 + 1)/denom;
-			else
-				newTime = oldTime/denom;
-			end
+	function newTime = transformTime(oldTime)
+		denom = 10;
+		if numel(num2str(oldTime(1))) == 4 % 4-digit year format
+			newTime = (oldTime - MLFIMdl.year_t1 + 1)/denom;
+		else
+			newTime = oldTime/denom;
+		end
         end
 		
 % -------------------------------------------------------------------------
