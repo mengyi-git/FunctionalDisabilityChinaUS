@@ -331,7 +331,7 @@ end
 
 %% Trend model vs. Hanewald et al. (2019)
 
-time_ageStart = 1998; 
+time_ageStart = 2002; % 1998: no sample below age 80 
 
 % load Hanewald et al. (2019) results
 h2019Mat = load(['h2019', '_', 'rate', '_', num2str(time_ageStart), '.mat']);
@@ -368,7 +368,7 @@ for i = 1:numel(sCell)
 end
 trend_rate = cell2mat(trend_rate);
 
-% get the **crude** rate
+% Calculate the **crude** rate
 CrudeFUClhls_t = getTransit_t(clhls_f_u, ParClhls);
 CrudeFRClhls_t = getTransit_t(clhls_f_r, ParClhls);
 CrudeMUClhls_t = getTransit_t(clhls_m_u, ParClhls);
@@ -395,10 +395,10 @@ crude_rate(:, N+1) = CrudeGRClhls_t{1}.age;
 fileNameList = h2019Mat.tableVarName;
 for i = 1:N
     figure
-    plot(h2019Mat.x_age+65, log10(h2019_rate(:, i)), 'k--', 'LineWidth', 2)
+    plot(crude_rate(:, end), log10(crude_rate(:, i)), 'kx')
     hold on
     plot(clhls_uf_trend(:, end), log10(trend_rate(:, i)), 'k-', 'LineWidth', 2)
-    plot(crude_rate(:, end), log10(crude_rate(:, i)), 'kx')
+    plot(h2019Mat.x_age+65, log10(h2019_rate(:, i)), 'k--', 'LineWidth', 2)
     hold off
     xticks(65:10:105)
     xlim([65, 105])
@@ -406,11 +406,12 @@ for i = 1:N
     title(titleList{i})
     xlabel('Age')
     ylabel('log_{10} (transition rate)')
-    legend('Hanewald et al. (2019)', 'Trend model', ['Crude rate in ', num2str(time_ageStart)], 'Location', 'best')
+    legend(['Crude rate: ', num2str(time_ageStart)], ...
+        'Trend model', 'Hanewald et al. (2019)', 'Location', 'best')
     legend boxoff
-    
+    set(gca, 'fontsize', 18)
+
 %     % uncomment to save
-%     set(gca, 'fontsize', 18)
 %     tmp = ['log_trsRate_cf_', fileNameList{i}];
 %     saveas(gca, tmp, 'epsc');
 end
@@ -420,14 +421,6 @@ end
 % **static model** and **trend model**
 % see main_cf.m for the plot using the frailty model
 
-% clear
-
-% hStateList = {'Healthy', 'Disabled', 'Dead'};
-fontsize = 18;
-
-% transitPair = getTransitPair(); %[fromState, toState];
-% S = size(transitPair, 1);
-
 % load results of Li et al. (2017) and Sherris and Wei` (2021)
 li_sw_mat = load('li2017_sw2020_rate.mat');
 li_sw_trsRate = li_sw_mat.trsRate;
@@ -436,6 +429,9 @@ li_sw_trsRate = li_sw_mat.trsRate;
 model = 'trend'; % static / trend
 
 time_ageStart = 2010;
+if strcmp(model, 'static')
+    time_ageStart = 1998;
+end
 
 % tIndex: time index to extract crude rate
 switch model
@@ -459,6 +455,7 @@ hrs_m = getTrsMatrix(rndhrs_trend.trsRateM, transitPair);
 
 % choose gender: female or male
 gender = 'f'; % <-- change here, f or m
+
 switch gender
     case 'f'
         genderName = 'Female';
@@ -478,6 +475,7 @@ switch gender
         end
 end
 
+% plot
 for s = 1:S
     fromState = transitPair(s, 1); toState = transitPair(s, 2);
 
@@ -485,11 +483,11 @@ for s = 1:S
     y3 = li_sw_trsRate.(['li', '_' model, '_', gender]);
     
     figure
-    plot(hrs_fitted(:, end),log10(hrs_fitted(:, s)), 'k-', 'LineWidth', 2)
+    plot(hrs_crude.age, log10(hrs_crude.transitRate{fromState, toState}(:, tIndex)), 'kx');
     hold on
+    plot(hrs_fitted(:, end),log10(hrs_fitted(:, s)), 'k-', 'LineWidth', 2)
     plot(li_sw_mat.x_age, log10(y2(:, s)), 'b--', 'LineWidth', 2)
     plot(li_sw_mat.x_age, log10(y3(:, s)), 'r:', 'LineWidth', 2)
-    plot(hrs_crude.age, log10(hrs_crude.transitRate{fromState, toState}(:, tIndex)), 'kx');
     hold off
     
     xticks(65:10:105)
@@ -500,15 +498,15 @@ for s = 1:S
     ylabel('log_{10} (transition rate)')
     
     title([genderName, ': ', hStateList{fromState}, ' to ', hStateList{toState}])
-    legend([upper(model(1)), model(2:end), ' model'], ...
+    legend(crudeRateName, [upper(model(1)), model(2:end), ' model'], ...
         'Sherris and Wei (2021)', 'Li et al. (2017)', ...
-        crudeRateName, 'Location', 'best')
+        'Location', 'best')
     legend boxoff
 
-    set(gca, 'fontsize', fontsize)
+    set(gca, 'fontsize', 18)
     
 %     % uncomment to save
-%     fileName = ['hRateCf', '_', 's', num2str(s), '_', 'f', '_', model, '_', num2str(time_ageStart)];
+%     fileName = ['log_hRateCf', '_', 's', num2str(s), '_', gender, '_', model, '_', num2str(time_ageStart)];
 %     saveas(gca, fileName, 'epsc')
 end
 
@@ -847,5 +845,3 @@ for rIndex = 1:2
         end
     end
 end
-
-
