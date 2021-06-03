@@ -33,7 +33,7 @@ transitPair = getTransitPair(); %[fromState, toState];
 
 fontsize = 12;
 hStateList = {'Healthy', 'Disabled', 'Dead'};
-
+hStateNameList = {'h', 'd', 'dead'};
 
 %% Calculate crude transition rates
 
@@ -71,8 +71,26 @@ legend('CLHLS', 'HRS', 'Location', lcn{hState})
 legend boxoff
 set(gca, 'fontsize', fontsize)
 
+% use exposure in **proportion**
+yETRClhls = getETRProp(N_H_STATE, CrudeAllClhls);
+yETRHrs = getETRProp(N_H_STATE, CrudeAllHrs);
+
+figure
+hState = 2; % <-- change here: 1 = healthy; 2 = disabled
+plot(yETRClhls(:, end), yETRClhls(:, hState), 'k-', 'LineWidth', 2)
+hold on
+plot(yETRHrs(:, end), yETRHrs(:, hState), 'k--', 'LineWidth', 2)
+hold off
+xlim([65, 110])
+xlabel('Age')
+ylabel('Proportion of exposure years')
+legend('CLHLS', 'HRS', 'Location', 'best')
+legend boxoff
+set(gca, 'fontsize', fontsize)
+
+
 % ---- plot transition counts ----
-Trs = CrudeAllClhls; % <-- change here: TrsAllClhls or TrsAllHrs
+Trs = CrudeAllClhls; % <-- change here: CrudeAllClhls or CrudeAllHrs
 transitCount = cell(1, S);
 for s = 1:S
     fromState = transitPair(s, 1);
@@ -109,54 +127,65 @@ set(gca, 'fontsize', fontsize)
 
 
 % --- plot crude transition rate by gender ---
+% log transition rates (y-axis has a linear scale)
 for s = 1:S
     fromState = transitPair(s, 1);
     toState = transitPair(s, 2);
     
     figure
-    semilogy(CrudeFClhls.age, CrudeFClhls.transitRate{fromState, toState}, 'ro');
+    plot(CrudeFClhls.age, log10(CrudeFClhls.transitRate{fromState, toState}), 'ro');
     hold on
-    semilogy(CrudeMClhls.age, CrudeMClhls.transitRate{fromState, toState}, 'b*');
-    semilogy(CrudeFHrs.age, CrudeFHrs.transitRate{fromState, toState}, 'md');
-    semilogy(CrudeMHrs.age, CrudeMHrs.transitRate{fromState, toState}, 'c+');
+    plot(CrudeMClhls.age, log10(CrudeMClhls.transitRate{fromState, toState}), 'b*');
+    plot(CrudeFHrs.age, log10(CrudeFHrs.transitRate{fromState, toState}), 'md');
+    plot(CrudeMHrs.age, log10(CrudeMHrs.transitRate{fromState, toState}), 'c+');
     hold off
     xlim([65, 110])
-    ylim([1e-3, 1])
+    ylim([-3, 0])
     xlabel('Age')
-    ylabel('Transition rate')
+    ylabel('log_{10} (transition rate)')
     title([hStateList{fromState}, ' to ', hStateList{toState}])
     set(gca, 'fontsize', fontsize)
     
     legend('Female (CLHLS)', 'Male (CLHLS)', ...
         'Female (HRS)', 'Male (HRS)', 'Location', 'best');
-    legend boxoff    
+    legend boxoff   
+    
+%     % uncomment to save
+%     tmp = ['log_trsRate_', hStateNameList{fromState}, '2', ...
+%         hStateNameList{toState}, '_clhls_hrs'];
+%     saveas(gca, tmp, 'epsc');
 end
 
 
 % --- plot crude transition rate by residence ---
+% log transition rates (y-axis has a linear scale) <-- IN PAPER
 for s = 1:S
     fromState = transitPair(s, 1);
     toState = transitPair(s, 2);
 
     figure
-    semilogy(CrudeUClhls.age, CrudeUClhls.transitRate{fromState, toState}, 'ro');
+    plot(CrudeUClhls.age, log10(CrudeUClhls.transitRate{fromState, toState}), 'ro');
     hold on
-    semilogy(CrudeRClhls.age, CrudeRClhls.transitRate{fromState, toState}, 'kx');
+    plot(CrudeRClhls.age, log10(CrudeRClhls.transitRate{fromState, toState}), 'kx');
     hold off
     xlim([65, 110])
-    ylim([1e-3, 1])
+    ylim([-3, 0])
     xlabel('Age')
-    ylabel('Transition rate')
+    ylabel('log_{10} (transition rate)')
     title([hStateList{fromState}, ' to ', hStateList{toState}])
     set(gca, 'fontsize', fontsize)
     
     legend('Urban', 'Rural', 'Location', 'best');
     legend boxoff    
+    
+%     % uncomment to save
+%     tmp = ['log_trsRate_', hStateNameList{fromState}, '2', ...
+%         hStateNameList{toState}, '_clhls_resid'];
+%     saveas(gca, tmp, 'epsc');
 end
 
 
 % ---- crude transition rates by time ----
-
 CrudeClhls_t = getTransit_t(clhls, ParClhls);
 CrudeHrs_t = getTransit_t(rndhrs, ParHrs);
 
@@ -165,9 +194,8 @@ ageMax = 106;
 nAge = ageMax - ageMin + 1;
 yMin = 10^(-3);
 
-hStateNameList = {'h', 'd', 'dead'};
-
 % CLHLS
+% log transition rates (y-axis has a linear scale) <-- IN PAPER
 for s = 1:S
     fromState = transitPair(s, 1);
     toState = transitPair(s, 2);
@@ -181,13 +209,13 @@ for s = 1:S
     nCol = size(rate, 2);
 
     figure
-    h = semilogy(ParClhls.t, rate);
+    h = plot(ParClhls.t, log10(rate));
     set(h, {'color'}, num2cell(jet(size(rate, 1)), 2));
     set(gca, 'fontsize', fontsize)
     xlim([ParClhls.t(1), ParClhls.t(end)])
-    ylim([yMin, 1])
+    ylim([log10(yMin), 0])
     xlabel('Year')
-    ylabel('Transition rate')
+    ylabel('log_{10} (transition rate)')
     title([hStateList{fromState}, ' to ', hStateList{toState}])
     yrList = getYrList(2, ParClhls, 2014);
     xticks(ParClhls.t)
@@ -200,14 +228,14 @@ for s = 1:S
         legend boxoff
     end
     
-%     % uncomment to save
-%     tmp = ['trsRate_byWv_', hStateNameList{fromState}, '2', ...
-%         hStateNameList{toState}, '_clhls'];
-%     saveas(gca, tmp, 'epsc');
+    % uncomment to save
+    tmp = ['log_trsRate_byWv_', hStateNameList{fromState}, '2', ...
+        hStateNameList{toState}, '_clhls'];
+    saveas(gca, tmp, 'epsc');
 end
 
-
 % HRS
+% log transition rates (y-axis has a linear scale) <-- IN PAPER
 for s = 1:S
     fromState = transitPair(s, 1);
     toState = transitPair(s, 2);
@@ -220,13 +248,13 @@ for s = 1:S
     nCol = size(rate, 2);
 
     figure
-    h = semilogy(ParHrs.t, rate);
+    h = plot(ParHrs.t, log10(rate));
     set(h, {'color'}, num2cell(jet(size(rate, 1)), 2));
     set(gca, 'fontsize', fontsize)
     xlim([ParHrs.t(1), ParHrs.t(end)])
-    ylim([yMin, 1])
+    ylim([log10(yMin), 0])
     xlabel('Year')
-    ylabel('Transition rate')
+    ylabel('log_{10} (transition rate)')
     title([hStateList{fromState}, ' to ', hStateList{toState}])
     yrList = getYrList(2, ParHrs, 2014);
     xticks(ParHrs.t)
@@ -240,7 +268,7 @@ for s = 1:S
     end
     
 %     % uncomment to save
-%     tmp = ['trsRate_byWv_', hStateNameList{fromState}, '2', ...
+%     tmp = ['log_trsRate_byWv_', hStateNameList{fromState}, '2', ...
 %         hStateNameList{toState}, '_hrs'];
 %     saveas(gca, tmp, 'epsc');
     
@@ -264,42 +292,45 @@ TrsFemale = CrudeFHrs;
 TrsMale = CrudeMHrs;
 staticFemale = hrs_f_static;
 staticMale = hrs_m_static;
+dataName = 'hrs';
 
 % % CLHLS
 % TrsFemale = CrudeFClhls;
 % TrsMale = CrudeMClhls;
 % staticFemale = clhls_f_static;
 % staticMale = clhls_m_static;
+% dataName = 'clhls';
 
 for s = 1:S
     fromState = transitPair(s, 1);
     toState = transitPair(s, 2);
     
     figure
-    semilogy(TrsFemale.age, TrsFemale.transitRate{fromState, toState}, 'ro');
+    plot(TrsFemale.age, log10(TrsFemale.transitRate{fromState, toState}), 'ro');
     hold on
-    semilogy(staticFemale(:, end), staticFemale(:, s), 'r-', 'LineWidth', 2);
-    semilogy(TrsMale.age, TrsMale.transitRate{fromState, toState}, 'b*');
-    semilogy(staticMale(:, end), staticMale(:, s), 'b--', 'LineWidth', 2);
+    plot(staticFemale(:, end), log10(staticFemale(:, s)), 'r-', 'LineWidth', 2);
+    plot(TrsMale.age, log10(TrsMale.transitRate{fromState, toState}), 'b*');
+    plot(staticMale(:, end), log10(staticMale(:, s)), 'b--', 'LineWidth', 2);
     hold off
     xlim([65, 110])
-    ylim([1e-3, 1])
+    ylim([-3, 0])
     xlabel('Age')
-    ylabel('Transition rate')
+    ylabel('log_{10} (transition rate)')
     title([hStateList{fromState}, ' to ', hStateList{toState}])
     set(gca, 'fontsize', fontsize)    
     legend('Female (crude)', 'Female (static)', ...
         'Male (crude)', 'Male (static)', 'Location', 'best');
     legend boxoff    
+    
+    % uncomment to save
+    tmp = ['log_trsRate_', hStateNameList{fromState}, '2', ...
+        hStateNameList{toState}, '_static_', dataName];
+    saveas(gca, tmp, 'epsc');
 end
 
 
 %% Trend model vs. Hanewald et al. (2019)
 
-clear;
-
-hStateList = {'Healthy', 'Disabled', 'Dead'};
-transitPair = getTransitPair(); %[fromState, toState];
 time_ageStart = 1998; 
 
 % load Hanewald et al. (2019) results
@@ -337,81 +368,141 @@ for i = 1:numel(sCell)
 end
 trend_rate = cell2mat(trend_rate);
 
+% get the **crude** rate
+CrudeFUClhls_t = getTransit_t(clhls_f_u, ParClhls);
+CrudeFRClhls_t = getTransit_t(clhls_f_r, ParClhls);
+CrudeMUClhls_t = getTransit_t(clhls_m_u, ParClhls);
+CrudeMRClhls_t = getTransit_t(clhls_m_r, ParClhls);
+% in the same order as typeList
+CrudeGRClhls_t = {CrudeMUClhls_t; CrudeMRClhls_t; CrudeFUClhls_t; CrudeFRClhls_t};
+
+tIndex = find(ParClhls.t == time_ageStart - ParClhls.year_t1 + 1); % time index
+crude_rate = cell(1, N);
+for i = 1:numel(sCell)
+    s = sCell{i};
+    for j = 1:4
+        index = j + (i-1)*4;
+        
+        fromState = transitPair(s, 1); toState = transitPair(s, 2);
+        crude_rate{index} = CrudeGRClhls_t{j}.transitRate{fromState, toState}(:, tIndex);
+
+    end
+end
+crude_rate = cell2mat(crude_rate);
+crude_rate(:, N+1) = CrudeGRClhls_t{1}.age;
+
+% plot
 fileNameList = h2019Mat.tableVarName;
 for i = 1:N
     figure
-    semilogy(h2019Mat.x_age+65, h2019_rate(:, i), 'k--', 'LineWidth', 2)
+    plot(h2019Mat.x_age+65, log10(h2019_rate(:, i)), 'k--', 'LineWidth', 2)
     hold on
-    semilogy(clhls_uf_trend(:, end), trend_rate(:, i), 'k-', 'LineWidth', 2)
+    plot(clhls_uf_trend(:, end), log10(trend_rate(:, i)), 'k-', 'LineWidth', 2)
+    plot(crude_rate(:, end), log10(crude_rate(:, i)), 'kx')
     hold off
     xticks(65:10:105)
     xlim([65, 105])
-    ylim([1e-3, 1])
+    ylim([-3, 0])
     title(titleList{i})
     xlabel('Age')
-    ylabel('Transition rate')
-    legend('Hanewald et al. (2019)', 'Trend model', 'Location', 'best')
+    ylabel('log_{10} (transition rate)')
+    legend('Hanewald et al. (2019)', 'Trend model', ['Crude rate in ', num2str(time_ageStart)], 'Location', 'best')
     legend boxoff
     
 %     % uncomment to save
 %     set(gca, 'fontsize', 18)
-%     tmp = ['trsRate_cf_', fileNameList{i}];
+%     tmp = ['log_trsRate_cf_', fileNameList{i}];
 %     saveas(gca, tmp, 'epsc');
 end
 
-
-%% Estimated rates vs. Li et al. (2017) and Sherris and Wei (2020)
+    
+%% Estimated rates vs. Li et al. (2017) and Sherris and Wei (2021)
 % **static model** and **trend model**
 % see main_cf.m for the plot using the frailty model
 
-clear
+% clear
 
-hStateList = {'Healthy', 'Disabled', 'Dead'};
+% hStateList = {'Healthy', 'Disabled', 'Dead'};
 fontsize = 18;
 
-transitPair = getTransitPair(); %[fromState, toState];
-S = size(transitPair, 1);
+% transitPair = getTransitPair(); %[fromState, toState];
+% S = size(transitPair, 1);
 
-% load results of Li et al. (2017) and Sherris and Wei (2020)
+% load results of Li et al. (2017) and Sherris and Wei` (2021)
 li_sw_mat = load('li2017_sw2020_rate.mat');
 li_sw_trsRate = li_sw_mat.trsRate;
 
-% load results of the static model or trend model
-model = 'static'; % static / trend
+% choose model: static or trend
+model = 'trend'; % static / trend
+
 time_ageStart = 2010;
-if strcmp(model, 'static')
-    tmp = ['rndhrs', '_', 'rate', '_', model, '.mat'];
-else
-    tmp = ['rndhrs', '_', 'rate', '_', model, '_', num2str(time_ageStart), '.mat'];
+
+% tIndex: time index to extract crude rate
+switch model
+    case 'static'
+        crudeRateName = 'Crude rate: 1998 to 2014';
+        tIndex = 1;   
+        matFile = ['rndhrs', '_', 'rate', '_', model, '.mat'];
+    case 'trend'
+        crudeRateName = ['Crude rate: ', num2str(time_ageStart)];
+        tIndex = find(ParHrs.t == time_ageStart - ParHrs.year_t1 + 1); 
+        matFile = ['rndhrs', '_', 'rate', '_', model, '_', num2str(time_ageStart), '.mat'];
+        
+        % calculate crude transition rates in each wave
+        CrudeFHrs_t = getTransit_t(rndhrs_f, ParHrs);
+        CrudeMHrs_t = getTransit_t(rndhrs_m, ParHrs);
 end
-rndhrs_trend = load(tmp);
+rndhrs_trend = load(matFile);
 
 hrs_f = getTrsMatrix(rndhrs_trend.trsRateF, transitPair);
 hrs_m = getTrsMatrix(rndhrs_trend.trsRateM, transitPair);
 
-% female
+% choose gender: female or male
+gender = 'f'; % <-- change here, f or m
+switch gender
+    case 'f'
+        genderName = 'Female';
+        hrs_fitted = hrs_f;
+        if strcmp(model, 'static')
+            hrs_crude = CrudeFHrs;
+        elseif strcmp(model, 'trend')
+            hrs_crude = CrudeFHrs_t;
+        end
+    case 'm'
+        genderName = 'Male';
+        hrs_fitted = hrs_m;
+        if strcmp(model, 'static')
+            hrs_crude = CrudeMHrs;
+        elseif strcmp(model, 'trend')
+            hrs_crude = CrudeMHrs_t;
+        end
+end
+
 for s = 1:S
-    y2 = li_sw_trsRate.(['sw', '_' model, '_', 'f']);
-    y3 = li_sw_trsRate.(['li', '_' model, '_', 'f']);
+    fromState = transitPair(s, 1); toState = transitPair(s, 2);
+
+    y2 = li_sw_trsRate.(['sw', '_' model, '_', gender]);
+    y3 = li_sw_trsRate.(['li', '_' model, '_', gender]);
     
     figure
-    semilogy(hrs_f(:, end), hrs_f(:, s), 'k-', 'LineWidth', 2)
+    plot(hrs_fitted(:, end),log10(hrs_fitted(:, s)), 'k-', 'LineWidth', 2)
     hold on
-    semilogy(li_sw_mat.x_age, y2(:, s), 'b--', 'LineWidth', 2)
-    semilogy(li_sw_mat.x_age, y3(:, s), 'r:', 'LineWidth', 2)
+    plot(li_sw_mat.x_age, log10(y2(:, s)), 'b--', 'LineWidth', 2)
+    plot(li_sw_mat.x_age, log10(y3(:, s)), 'r:', 'LineWidth', 2)
+    plot(hrs_crude.age, log10(hrs_crude.transitRate{fromState, toState}(:, tIndex)), 'kx');
     hold off
     
     xticks(65:10:105)
     xlim([65, 105])
-    ylim([1e-3, 1])
+    ylim([-3, 0])
     
     xlabel('Age')
-    ylabel('Transition rate')
+    ylabel('log_{10} (transition rate)')
     
-    fromState = transitPair(s, 1); toState = transitPair(s, 2);
-    title(['Female: ', hStateList{fromState}, ' to ', hStateList{toState}])
-    legend([upper(model(1)), model(2:end), ' model'], 'Sherris and Wei (2020)', 'Li et al. (2017)', ...
-        'Location', 'best')
+    title([genderName, ': ', hStateList{fromState}, ' to ', hStateList{toState}])
+    legend([upper(model(1)), model(2:end), ' model'], ...
+        'Sherris and Wei (2021)', 'Li et al. (2017)', ...
+        crudeRateName, 'Location', 'best')
     legend boxoff
 
     set(gca, 'fontsize', fontsize)
@@ -420,39 +511,6 @@ for s = 1:S
 %     fileName = ['hRateCf', '_', 's', num2str(s), '_', 'f', '_', model, '_', num2str(time_ageStart)];
 %     saveas(gca, fileName, 'epsc')
 end
-
-% male
-for s = 1:S
-    y2 = li_sw_trsRate.(['sw', '_' model, '_', 'm']);
-    y3 = li_sw_trsRate.(['li', '_' model, '_', 'm']);
-    
-    figure
-    semilogy(hrs_m(:, end), hrs_m(:, s), 'k-', 'LineWidth', 2)
-    hold on
-    semilogy(li_sw_mat.x_age, y2(:, s), 'b--', 'LineWidth', 2)
-    semilogy(li_sw_mat.x_age, y3(:, s), 'r:', 'LineWidth', 2)
-    hold off
-    
-    xticks(65:10:105)
-    xlim([65, 105])
-    ylim([1e-3, 1])
-    
-    xlabel('Age')
-    ylabel('Transition rate')
-    
-    fromState = transitPair(s, 1); toState = transitPair(s, 2);
-    title(['Male: ', hStateList{fromState}, ' to ', hStateList{toState}])
-    legend([upper(model(1)), model(2:end), ' model'], 'Sherris and Wei (2020)', 'Li et al. (2017)', ...
-        'Location', 'best')
-    legend boxoff
-    
-    set(gca, 'fontsize', fontsize)
-    
-%     % uncomment to save
-%     fileName = ['hRateCf', '_', 's', num2str(s), '_', 'm', '_', model, '_', num2str(time_ageStart)];
-%     saveas(gca, fileName, 'epsc')
-end
-
 
 
 
@@ -788,5 +846,161 @@ for rIndex = 1:2
 %             saveas(gca, fileName, 'epsc')
         end
     end
+end
+
+
+
+%% Removed from the paper
+
+% ---------------------------------
+% The code below was in early draft 
+%   but no longer used in the paper
+% ---------------------------------
+
+%% Exploratory Data Analysis 
+
+% --- plot crude transition rate by gender ---
+% Semilog plot (y-axis has log scale) <-- NOT IN PAPER
+for s = 1:S
+    fromState = transitPair(s, 1);
+    toState = transitPair(s, 2);
+    
+    figure
+    semilogy(CrudeFClhls.age, CrudeFClhls.transitRate{fromState, toState}, 'ro');
+    hold on
+    semilogy(CrudeMClhls.age, CrudeMClhls.transitRate{fromState, toState}, 'b*');
+    semilogy(CrudeFHrs.age, CrudeFHrs.transitRate{fromState, toState}, 'md');
+    semilogy(CrudeMHrs.age, CrudeMHrs.transitRate{fromState, toState}, 'c+');
+    hold off
+    xlim([65, 110])
+    ylim([1e-3, 1])
+    xlabel('Age')
+    ylabel('Transition rate')
+    title([hStateList{fromState}, ' to ', hStateList{toState}])
+    set(gca, 'fontsize', fontsize)
+    
+    legend('Female (CLHLS)', 'Male (CLHLS)', ...
+        'Female (HRS)', 'Male (HRS)', 'Location', 'best');
+    legend boxoff    
+    
+    % uncomment to save
+    tmp = ['trsRate_', hStateNameList{fromState}, '2', ...
+        hStateNameList{toState}, '_clhls_hrs'];
+    saveas(gca, tmp, 'epsc');
+end
+
+% --- plot crude transition rate by residence ---
+% Semilog plot (y-axis has log scale) <-- NOT IN PAPER
+for s = 1:S
+    fromState = transitPair(s, 1);
+    toState = transitPair(s, 2);
+
+    figure
+    semilogy(CrudeUClhls.age, CrudeUClhls.transitRate{fromState, toState}, 'ro');
+    hold on
+    semilogy(CrudeRClhls.age, CrudeRClhls.transitRate{fromState, toState}, 'kx');
+    hold off
+    xlim([65, 110])
+    ylim([1e-3, 1])
+    xlabel('Age')
+    ylabel('Transition rate')
+    title([hStateList{fromState}, ' to ', hStateList{toState}])
+    set(gca, 'fontsize', fontsize)
+    
+    legend('Urban', 'Rural', 'Location', 'best');
+    legend boxoff    
+    
+    % uncomment to save
+    tmp = ['trsRate_', hStateNameList{fromState}, '2', ...
+        hStateNameList{toState}, '_clhls_resid'];
+    saveas(gca, tmp, 'epsc');
+end
+
+% ---- crude transition rates by time ----
+CrudeClhls_t = getTransit_t(clhls, ParClhls);
+CrudeHrs_t = getTransit_t(rndhrs, ParHrs);
+
+ageMin = 65; 
+ageMax = 106;
+nAge = ageMax - ageMin + 1;
+yMin = 10^(-3);
+
+% CLHLS
+% Semilog plot (y-axis has log scale)
+for s = 1:S
+    fromState = transitPair(s, 1); toState = transitPair(s, 2);
+    
+    rate = CrudeClhls_t.transitRate{fromState, toState};
+    
+    begInd = ageMin - CrudeClhls_t.age(1) + 1;
+    endInd = begInd + nAge - 1;
+    rate = rate(begInd:endInd, :);
+    
+    nCol = size(rate, 2);
+
+    figure
+    h = semilogy(ParClhls.t, rate);
+    set(h, {'color'}, num2cell(jet(size(rate, 1)), 2));
+    set(gca, 'fontsize', fontsize)
+    xlim([ParClhls.t(1), ParClhls.t(end)])
+    ylim([yMin, 1])
+    xlabel('Year')
+    ylabel('Transition rate')
+    title([hStateList{fromState}, ' to ', hStateList{toState}])
+    yrList = getYrList(2, ParClhls, 2014);
+    xticks(ParClhls.t)
+    xticklabels(yrList)
+    
+    if s == S % add legend
+        hl = legend(arrayfun(@num2str, ageMin:ageMax, 'UniformOutput', 0), ...
+            'Orientation', 'horizontal', 'Location', 'best');
+        hl.NumColumns = 6;
+        legend boxoff
+    end
+    
+%     % uncomment to save
+%     tmp = ['trsRate_byWv_', hStateNameList{fromState}, '2', ...
+%         hStateNameList{toState}, '_clhls'];
+%     saveas(gca, tmp, 'epsc');
+end
+
+% HRS
+% Semilog plot (y-axis has log scale)
+for s = 1:S
+    fromState = transitPair(s, 1);
+    toState = transitPair(s, 2);
+    rate = CrudeHrs_t.transitRate{fromState, toState};
+    
+    begInd = ageMin - CrudeHrs_t.age(1) + 1;
+    endInd = begInd + nAge - 1;
+    rate = rate(begInd:endInd, :);
+    
+    nCol = size(rate, 2);
+
+    figure
+    h = semilogy(ParHrs.t, rate);
+    set(h, {'color'}, num2cell(jet(size(rate, 1)), 2));
+    set(gca, 'fontsize', fontsize)
+    xlim([ParHrs.t(1), ParHrs.t(end)])
+    ylim([yMin, 1])
+    xlabel('Year')
+    ylabel('Transition rate')
+    title([hStateList{fromState}, ' to ', hStateList{toState}])
+    yrList = getYrList(2, ParHrs, 2014);
+    xticks(ParHrs.t)
+    xticklabels(yrList)
+    
+    if s == S % add legend
+        hl = legend(arrayfun(@num2str, ageMin:ageMax, 'UniformOutput', 0), ...
+            'Orientation', 'horizontal', 'Location', 'best');
+        hl.NumColumns = 6;
+        legend boxoff
+    end
+    
+%     % uncomment to save
+%     tmp = ['trsRate_byWv_', hStateNameList{fromState}, '2', ...
+%         hStateNameList{toState}, '_hrs'];
+%     saveas(gca, tmp, 'epsc');
+    
 end
 
