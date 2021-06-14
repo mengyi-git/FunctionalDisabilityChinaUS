@@ -35,11 +35,14 @@ fontsize = 12;
 hStateList = {'Healthy', 'Disabled', 'Dead'};
 hStateNameList = {'h', 'd', 'dead'};
 
+dataList = {'clhls', 'hrs'};
+
 %% Calculate crude transition rates
 
 % CLHLS / HRS
 CrudeAllClhls = calTransit(clhls, N_H_STATE);
 CrudeAllHrs = calTransit(rndhrs, N_H_STATE);
+CrudeAll = {CrudeAllClhls, CrudeAllHrs};
 
 % female
 CrudeFClhls = calTransit(clhls_f, N_H_STATE);
@@ -56,73 +59,84 @@ CrudeRClhls = calTransit(clhls_r, N_H_STATE);
 
 %% Exploratory Data Analysis 
 
-% ---- plot exposure to risk ----
-hState = 1; % <-- change here: 1 = healthy; 2 = disabled
+% ---- plot person-years at risk ----
 lcn = {'northeast', 'northwest'};
-figure
-plot(CrudeAllClhls.age, CrudeAllClhls.transitETR{hState}, 'k-', 'LineWidth', 2)
-hold on
-plot(CrudeAllHrs.age, CrudeAllHrs.transitETR{hState}, 'k--', 'LineWidth', 2)
-hold off
-xlim([65, 110])
-xlabel('Age')
-ylabel('No. of exposure years')
-legend('CLHLS', 'HRS', 'Location', lcn{hState})
-legend boxoff
-set(gca, 'fontsize', fontsize)
+for hState = 1:N_H_STATE-1 % <-- 1 = healthy; 2 = disabled
+    figure
+    plot(CrudeAllClhls.age, CrudeAllClhls.transitETR{hState}, 'k-', 'LineWidth', 2)
+    hold on
+    plot(CrudeAllHrs.age, CrudeAllHrs.transitETR{hState}, 'k--', 'LineWidth', 2)
+    hold off
+    xlim([65, 110])
+    xlabel('Age')
+    ylabel('Person-years at risk')
+    legend('CLHLS', 'HRS', 'Location', lcn{hState})
+    legend boxoff
+    set(gca, 'fontsize', fontsize)
+%     % uncomment to save
+%     saveas(gca, ['e2risk_h', num2str(hState)], 'epsc');
+end
 
 % use exposure in **proportion**
 yETRClhls = getETRProp(N_H_STATE, CrudeAllClhls);
 yETRHrs = getETRProp(N_H_STATE, CrudeAllHrs);
 
-figure
-hState = 2; % <-- change here: 1 = healthy; 2 = disabled
-plot(yETRClhls(:, end), yETRClhls(:, hState), 'k-', 'LineWidth', 2)
-hold on
-plot(yETRHrs(:, end), yETRHrs(:, hState), 'k--', 'LineWidth', 2)
-hold off
-xlim([65, 110])
-xlabel('Age')
-ylabel('Proportion of exposure years')
-legend('CLHLS', 'HRS', 'Location', 'best')
-legend boxoff
-set(gca, 'fontsize', fontsize)
-
+for hState = 1:N_H_STATE-1 % <-- change here: 1 = healthy; 2 = disabled
+    figure
+    plot(yETRClhls(:, end), yETRClhls(:, hState), 'k-', 'LineWidth', 2)
+    hold on
+    plot(yETRHrs(:, end), yETRHrs(:, hState), 'k--', 'LineWidth', 2)
+    hold off
+    xlim([65, 110])
+    xlabel('Age')
+    ylabel('Proportion of person-years at risk')
+    legend('CLHLS', 'HRS', 'Location', 'best')
+    legend boxoff
+    set(gca, 'fontsize', fontsize)
+    % uncomment to save
+    saveas(gca, ['e2riskProp_h', num2str(hState)], 'epsc');
+end
 
 % ---- plot transition counts ----
-Trs = CrudeAllClhls; % <-- change here: CrudeAllClhls or CrudeAllHrs
-transitCount = cell(1, S);
-for s = 1:S
-    fromState = transitPair(s, 1);
-    toState = transitPair(s, 2);
-    transitCount{s} = Trs.transitCount{fromState, toState};
+for iData = 1:2
+    Trs = CrudeAll{iData}; % <-- CrudeAllClhls or CrudeAllHrs
+    
+    transitCount = cell(1, S);
+    for s = 1:S
+        fromState = transitPair(s, 1);
+        toState = transitPair(s, 2);
+        transitCount{s} = Trs.transitCount{fromState, toState};
+    end
+    transitCount = cell2mat(transitCount);
+    transitCountProp = transitCount ./ sum(transitCount, 2);
+
+    % use transition counts in proportion
+    yTransit = transitCountProp; 
+    yLabel = 'Proportion of transitions'; 
+
+    figure
+    plot(Trs.age, yTransit(:, 1), 'k-.', 'LineWidth', 2) % healthy to disabled
+    hold on
+    plot(Trs.age, yTransit(:, 2), 'k-', 'LineWidth', 2)
+    plot(Trs.age, yTransit(:, 3), 'k:', 'LineWidth', 2)
+    plot(Trs.age, yTransit(:, 4), 'k--', 'LineWidth', 2)
+    hold off
+    xlim([65, 110])
+    ylim([0, 1])
+    xlabel('Age')
+    ylabel(yLabel) 
+    legend(...
+        'Healthy to disabled', ...
+        'Disabled to healthy', ...
+        'Healthy to dead', ...
+        'Disabled to dead', ...
+        'Location', 'best')
+    legend boxoff
+    set(gca, 'fontsize', fontsize)
+    
+    % uncomment to save
+    saveas(gca, ['trsCountProp_', dataList{iData}], 'epsc');
 end
-transitCount = cell2mat(transitCount);
-transitCountProp = transitCount ./ sum(transitCount, 2);
-
-% use transition counts in proportion
-yTransit = transitCountProp; 
-yLabel = 'Proportion of transitions'; 
-
-figure
-plot(Trs.age, yTransit(:, 1), 'k-.', 'LineWidth', 2) % healthy to disabled
-hold on
-plot(Trs.age, yTransit(:, 2), 'k-', 'LineWidth', 2)
-plot(Trs.age, yTransit(:, 3), 'k:', 'LineWidth', 2)
-plot(Trs.age, yTransit(:, 4), 'k--', 'LineWidth', 2)
-hold off
-xlim([65, 110])
-ylim([0, 1])
-xlabel('Age')
-ylabel(yLabel) 
-legend(...
-    'Healthy to disabled', ...
-    'Disabled to healthy', ...
-    'Healthy to dead', ...
-    'Disabled to dead', ...
-    'Location', 'best')
-legend boxoff
-set(gca, 'fontsize', fontsize)
 % ---- end of transition counts ----
 
 
@@ -701,25 +715,25 @@ end
 %% urban-rural results
 
 clear;
+fileDir = './simFiles/';
 
 time_ageStart = 1998; % 1998 or 2014
 residNameList = {'Urban', 'Rural'};
 
 % load results of static + trend models
 clhls_static = struct;
-clhls_static.u = load('clhls_static_resid_u_1998');
-clhls_static.r = load('clhls_static_resid_r_1998');
+clhls_static.u = load([fileDir, 'clhls_static_resid_u_1998']);
+clhls_static.r = load([fileDir, 'clhls_static_resid_r_1998']);
 
 clhls_trend = struct;
-clhls_trend.u = load(['clhls_trend_resid_u_', num2str(time_ageStart)]);
-clhls_trend.r = load(['clhls_trend_resid_r_', num2str(time_ageStart)]);
+clhls_trend.u = load([fileDir, 'clhls_trend_resid_u_', num2str(time_ageStart)]);
+clhls_trend.r = load([fileDir, 'clhls_trend_resid_r_', num2str(time_ageStart)]);
 
 Surv = struct; H1Prop = struct; H2Prop = struct;
 resid = {'u', 'r'};
 gender = {'f', 'm'};
 rName = {'Urban', 'Rural'};  % used in figure title, match resid
 gName = {'Female', 'Male'}; % used in figure title, match gender
-fileDir = './simFiles/';
 for iResid = 1:2
     resid_i = resid{iResid};
     
@@ -845,3 +859,31 @@ for rIndex = 1:2
         end
     end
 end
+
+%% unused
+
+gIndex = 2;
+gender_i = gender{gIndex};
+
+% frailty
+y1 = Surv.(['clhls', num2str(ageBeg), 'u', gender_i]);
+y2 = Surv.(['clhls', num2str(ageBeg), 'r', gender_i]);
+
+% static
+y1Static = clhls_static.('u').survProp.([gender_i, num2str(ageBeg)]); 
+y2Static = clhls_static.('r').survProp.([gender_i, num2str(ageBeg)]); 
+
+% trend
+y1Trend = clhls_trend.('u').survProp.([gender_i, num2str(ageBeg)]);
+y2Trend = clhls_trend.('r').survProp.([gender_i, num2str(ageBeg)]);
+
+plotMeanCI_clhls_resid(xAge, y1, y2, y1Static, y2Static, y1Trend, y2Trend)
+
+title(gName{gIndex})
+% legend('Frailty 95% CI (Urban)', 'Frailty Mean (Urban)', 'Static (Urban)', ...
+%     'Frailty 95% CI (Rural)', 'Frailty Mean (Rural)', 'Static (Rural)', 'Location', 'best')
+legend('Frailty Mean (Urban)', 'Static (Urban)', ...
+    'Frailty Mean (Rural)', 'Static (Rural)', 'Location', 'best')
+
+legend boxoff
+set(gca, 'fontsize', 12)
