@@ -345,7 +345,7 @@ end
 
 %% Trend model vs. Hanewald et al. (2019)
 
-time_ageStart = 2002; % 1998: no sample below age 80 
+time_ageStart = 1998; % 1998: no sample below age 80 
 
 % load Hanewald et al. (2019) results
 h2019Mat = load(['h2019', '_', 'rate', '_', num2str(time_ageStart), '.mat']);
@@ -382,36 +382,12 @@ for i = 1:numel(sCell)
 end
 trend_rate = cell2mat(trend_rate);
 
-% Calculate the **crude** rate
-CrudeFUClhls_t = getTransit_t(clhls_f_u, ParClhls);
-CrudeFRClhls_t = getTransit_t(clhls_f_r, ParClhls);
-CrudeMUClhls_t = getTransit_t(clhls_m_u, ParClhls);
-CrudeMRClhls_t = getTransit_t(clhls_m_r, ParClhls);
-% in the same order as typeList
-CrudeGRClhls_t = {CrudeMUClhls_t; CrudeMRClhls_t; CrudeFUClhls_t; CrudeFRClhls_t};
-
-tIndex = find(ParClhls.t == time_ageStart - ParClhls.year_t1 + 1); % time index
-crude_rate = cell(1, N);
-for i = 1:numel(sCell)
-    s = sCell{i};
-    for j = 1:4
-        index = j + (i-1)*4;
-        
-        fromState = transitPair(s, 1); toState = transitPair(s, 2);
-        crude_rate{index} = CrudeGRClhls_t{j}.transitRate{fromState, toState}(:, tIndex);
-
-    end
-end
-crude_rate = cell2mat(crude_rate);
-crude_rate(:, N+1) = CrudeGRClhls_t{1}.age;
-
 % plot
 fileNameList = h2019Mat.tableVarName;
 for i = 1:N
     figure
-    plot(crude_rate(:, end), log10(crude_rate(:, i)), 'kx')
-    hold on
     plot(clhls_uf_trend(:, end), log10(trend_rate(:, i)), 'k-', 'LineWidth', 2)
+    hold on
     plot(h2019Mat.x_age+65, log10(h2019_rate(:, i)), 'k--', 'LineWidth', 2)
     hold off
     xticks(65:10:105)
@@ -420,12 +396,11 @@ for i = 1:N
     title(titleList{i})
     xlabel('Age')
     ylabel('log_{10} (transition rate)')
-    legend(['Crude rate: ', num2str(time_ageStart)], ...
-        'Trend model', 'Hanewald et al. (2019)', 'Location', 'best')
+    legend('Trend model', 'Hanewald et al. (2019)', 'Location', 'best')
     legend boxoff
     set(gca, 'fontsize', 18)
 
-%     % uncomment to save
+% %     uncomment to save
 %     tmp = ['log_trsRate_cf_', fileNameList{i}];
 %     saveas(gca, tmp, 'epsc');
 end
@@ -447,20 +422,12 @@ if strcmp(model, 'static')
     time_ageStart = 1998;
 end
 
-% tIndex: time index to extract crude rate
+% load fitted rates
 switch model
     case 'static'
-        crudeRateName = 'Crude rate: 1998 to 2014';
-        tIndex = 1;   
         matFile = ['rndhrs', '_', 'rate', '_', model, '.mat'];
     case 'trend'
-        crudeRateName = ['Crude rate: ', num2str(time_ageStart)];
-        tIndex = find(ParHrs.t == time_ageStart - ParHrs.year_t1 + 1); 
         matFile = ['rndhrs', '_', 'rate', '_', model, '_', num2str(time_ageStart), '.mat'];
-        
-        % calculate crude transition rates in each wave
-        CrudeFHrs_t = getTransit_t(rndhrs_f, ParHrs);
-        CrudeMHrs_t = getTransit_t(rndhrs_m, ParHrs);
 end
 rndhrs_trend = load(matFile);
 
@@ -474,19 +441,9 @@ switch gender
     case 'f'
         genderName = 'Female';
         hrs_fitted = hrs_f;
-        if strcmp(model, 'static')
-            hrs_crude = CrudeFHrs;
-        elseif strcmp(model, 'trend')
-            hrs_crude = CrudeFHrs_t;
-        end
     case 'm'
         genderName = 'Male';
         hrs_fitted = hrs_m;
-        if strcmp(model, 'static')
-            hrs_crude = CrudeMHrs;
-        elseif strcmp(model, 'trend')
-            hrs_crude = CrudeMHrs_t;
-        end
 end
 
 % plot
@@ -497,9 +454,8 @@ for s = 1:S
     y3 = li_sw_trsRate.(['li', '_' model, '_', gender]);
     
     figure
-    plot(hrs_crude.age, log10(hrs_crude.transitRate{fromState, toState}(:, tIndex)), 'kx');
-    hold on
     plot(hrs_fitted(:, end),log10(hrs_fitted(:, s)), 'k-', 'LineWidth', 2)
+    hold on
     plot(li_sw_mat.x_age, log10(y2(:, s)), 'b--', 'LineWidth', 2)
     plot(li_sw_mat.x_age, log10(y3(:, s)), 'r:', 'LineWidth', 2)
     hold off
@@ -512,7 +468,7 @@ for s = 1:S
     ylabel('log_{10} (transition rate)')
     
     title([genderName, ': ', hStateList{fromState}, ' to ', hStateList{toState}])
-    legend(crudeRateName, [upper(model(1)), model(2:end), ' model'], ...
+    legend([upper(model(1)), model(2:end), ' model'], ...
         'Sherris and Wei (2021)', 'Li et al. (2017)', ...
         'Location', 'best')
     legend boxoff
