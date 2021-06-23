@@ -210,22 +210,6 @@ end
 % plot transition rate - frailty model
 % --------------------------------------
 
-% ---- load crude rate ----
-
-% Read table and set Par
-rndhrs = readtable(['rndhrs', '_', 'transit.csv']);
-rndhrs_f = rndhrs(rndhrs.RAFEMALE==1, :);
-rndhrs_m = rndhrs(rndhrs.RAFEMALE==0, :);
-ParHrs = setPar(rndhrs);
-
-tIndex = find(ParHrs.t == time_ageStart - ParHrs.year_t1 + 1); 
-crudeRateName = ['Crude rate: ', num2str(time_ageStart)];
-
-% Calculate crude transition rates in each wave
-CrudeFHrs_t = getTransit_t(rndhrs_f, ParHrs);
-CrudeMHrs_t = getTransit_t(rndhrs_m, ParHrs);
-Crude_t = {CrudeFHrs_t; CrudeMHrs_t};
-
 % ---- load fitted rate ----
 x_age = ageBeg:ageEnd;
 trsRateLi = trsRateFrailtyCopy.li_frailty_f;    
@@ -237,7 +221,6 @@ hStateList = {'Healthy', 'Disabled', 'Dead'};
 
 for gIndex = 1:2
     gender_i = lower(gName{gIndex}(1));
-    crude_i = Crude_t{gIndex};
     
     for s = 1:S    
         fromState = transitPair(s, 1); toState = transitPair(s, 2);    
@@ -251,9 +234,8 @@ for gIndex = 1:2
         yMeanFu = mean(trsRateFu_s, 2);
 
         figure
-        plot(crude_i.age, log10(crude_i.transitRate{fromState, toState}(:, tIndex)), 'kx');
-        hold on
         plot(x_age, log10(yMeanFu), 'k-', 'LineWidth', 2)
+        hold on
         plot(x_age, log10(yMeanSW), 'b--', 'LineWidth', 2)
         plot(x_age, log10(yMeanLi), 'r:', 'LineWidth', 2)
         hold off
@@ -266,7 +248,7 @@ for gIndex = 1:2
         ylabel('log_{10} (transition rate)')
         title([gName{gIndex}, ': ', hStateList{fromState}, ' to ', hStateList{toState}])
         
-        legend(crudeRateName, 'Frailty model', ...
+        legend('Frailty model', ...
             'Sherris and Wei (2020)', 'Li et al. (2017)', ...
             'Location', 'best')
         legend boxoff
