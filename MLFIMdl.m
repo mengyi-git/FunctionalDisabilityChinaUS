@@ -1326,7 +1326,7 @@ classdef MLFIMdl
 	%Calculate p-value
             % hypothesis test
             wald = theta ./ se;
-            pval = 1 - normcdf(abs(wald)); % p-value
+            pval = 2 * ( 1 - normcdf(abs(wald)) ); % p-value
         end
         
 % -------------------------------------------------------------------------    
