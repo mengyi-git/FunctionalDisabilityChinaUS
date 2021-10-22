@@ -315,11 +315,11 @@ classdef MLFIMdl
  
         function thetaName = get.thetaName(obj)
             if MLFIMdl.isResid(obj.model)
-                thetaName = {'$\hat{\beta}_s$', '$\hat{\gamma}^\text{age}_s$', '$\hat{\gamma}^\text{female}_s$',...
-                    '$\hat{\gamma}^\text{urban}_s$', '$\hat{\gamma}^\text{time}_s$', '$\hat{\alpha}_s$'};
+                thetaName = {'$\hat{\beta}_s$', '$\hat{\gamma}^{\text{age}}_s$', '$\hat{\gamma}^{\text{female}}_s$',...
+                    '$\hat{\gamma}^{\text{urban}}_s$', '$\hat{\gamma}^{\text{time}}_s$', '$\hat{\alpha}_s$'};
             else
-                thetaName = {'$\hat{\beta}_s$', '$\hat{\gamma}^\text{age}_s$', '$\hat{\gamma}^\text{female}_s$',...
-                    '$\hat{\gamma}^\text{time}_s$', '$\hat{\alpha}_s$'};
+                thetaName = {'$\hat{\beta}_s$', '$\hat{\gamma}^{\text{age}}_s$', '$\hat{\gamma}^{\text{female}}_s$',...
+                    '$\hat{\gamma}^{\text{time}}_s$', '$\hat{\alpha}_s$'};
             end
         end
         
@@ -1178,20 +1178,160 @@ classdef MLFIMdl
             end            
         end
         
+% -------------------------------------------------------------------------
+% --------  calculate expectation from transition probabilities -----------
+% -------------------------------------------------------------------------
+
+        function y = calStateProb(obj, Input, initHState)
+        %Calculate the probability of being in each alive state
+            % given:
+            % inititial health state
+            % single-period transition probability
+                % single-period transition is stored in cell
+
+            trsProbCell = calTrsProb(obj, Input);
+            T = size(trsProbCell, 1);
+
+            % multi-period transition probability
+            transitProbMulti = MLFIMdl.calTrsProbMulti(trsProbCell);
+
+            % probability in each state
+            % last col for age
+            y = zeros(T+1, obj.N_H_STATE);
+            y(1, initHState) = 1;
+            y(:, end) = trsProbCell{1, 1}+(0:T);
+
+            for tIndex = 2:T+1
+                for iHState = 1:obj.N_H_STATE-1
+                    y(tIndex, iHState) = transitProbMulti{tIndex-1, end}(initHState, iHState);
+                end    
+            end
+
+        end
+        
+% -------------------------------------------------------------------------    
+
+        function y = calSurvival(obj, Input, initHState)
+        %Calculate the probability of being alive
+            % given:
+            % inititial health state
+            % single-period transition probability
+                % single-period transition is stored in cell
+
+            y_tmp = calStateProb(obj, Input, initHState);
+            y = sum(y_tmp(:, 1 : obj.N_H_STATE-1), 2);
+        end
+        
+% -------------------------------------------------------------------------    
+        
+        function e = calLifeExp(obj, Input, initHState)
+            y = calSurvival(obj, Input, initHState);
+            e = MLFIMdl.calExpDur(y(:, 1));
+        end
+        
+% -------------------------------------------------------------------------    
+        		
+        function e = calAvgYear(obj, Input, initHState)
+        %Calculate average no. of years spent in each alive state
+        
+            y = calStateProb(obj, Input, initHState);
+            e = MLFIMdl.calExpDur(y(:, 1:end-1));
+        end
+        
+% -------------------------------------------------------------------------    
+        
+		function y = calFirstEntryAge(obj, Input, targetState, INIT_H_STATE)
+		%Calculate first time into targetState
+            % given 
+            % trsProbCell: one-period transition probability
+                % First col: age; Last col: transit probability
+            % INIT_H_STATE: initial health state           
+
+            trsProbCell = calTrsProb(obj, Input);
+
+            if targetState == INIT_H_STATE
+                y = trsProbCell{1, 1};
+                return
+            end            
+
+            aliveState = 1:(obj.N_H_STATE-1);
+            otherState = setdiff(aliveState, targetState);
+
+            T = size(trsProbCell, 1);
+
+            % probability of being in state other than 'targetState' before entering hState
+            stateOtherProb = zeros(T, obj.N_H_STATE);
+            stateOtherProb(:, end) = cell2mat(trsProbCell(:, 1));  % age at period t
+
+            tIndex = 1;
+            stateOtherProb(tIndex, INIT_H_STATE) = 1;
+
+            tIndex = 2;
+            for iHState = otherState
+                stateOtherProb(tIndex, iHState) = trsProbCell{tIndex-1, end}(INIT_H_STATE, iHState);
+            end
+
+            for tIndex = 3:T+1
+            %     age = 65 + 2*(t-1);       
+
+                for iHState = otherState
+                    sum_tmp = 0;
+
+                    % transit from otherState to iHState
+                    for jHState = otherState
+                        sum_tmp = sum_tmp + stateOtherProb(tIndex - 1, jHState) * trsProbCell{tIndex-1, end}(jHState, iHState);
+                    end
+
+                    stateOtherProb(tIndex, iHState) = sum_tmp;
+                end
+            %     % Probability of being in State 1
+            %     stateOtherProb(t, 1) = stateOtherProb(t - 1, 1) * transitProbCell{t-1, end}(1, 1) + ...
+            %         stateOtherProb(t - 1, 2) * transitProbCell{t-1, end}(2, 1);
+            %     
+            %     % Probability of being in State 2    
+            %     stateOtherProb(t, 2) = stateOtherProb(t - 1, 2) * transitProbCell{t-1, end}(2, 2) + ...
+            %         stateOtherProb(t - 1, 1) * transitProbCell{t-1, end}(1, 2);
+            end
+
+            % Probability of first entering hState 
+            firstProb = zeros(T+1, 2);
+            firstProb(:, 1) = trsProbCell{1, 1}+(0:T);  % age at period t
+
+            % t = 1; % zero probability
+
+            tIndex = 2;
+            firstProb(tIndex, 2) = trsProbCell{tIndex-1, end}(INIT_H_STATE, targetState);
+
+            for tIndex = 3:T+1
+                sum_tmp = 0;
+                for iHState = otherState
+                    sum_tmp = sum_tmp + stateOtherProb(tIndex - 1, iHState) * trsProbCell{tIndex-1, end}(iHState, targetState);
+                end
+                firstProb(tIndex, 2) = sum_tmp;
+            end
+
+            % Normalise the probability so the sum is 1
+            firstProb(:, 3) = firstProb(:, 2) / sum(firstProb(:, 2));
+
+            % Calculate the expectation
+            y = sum( firstProb(:, 1) .* firstProb(:, 3) );
+
+        end
+        
     end % end of methods
     
     
     methods (Static)
         
-	function output = isResid(model)
-	% The model with residence always end with '_resid'
+        function output = isResid(model)
+        % The model with residence always end with '_resid'
 
-		newStr = split(model, '_');
-		if strcmp(newStr{end}, 'resid')
-			output = 1;
-		else
-			output = 0;
-		end
+            newStr = split(model, '_');
+            if strcmp(newStr{end}, 'resid')
+                output = 1;
+            else
+                output = 0;
+            end
         end		  
         
 % -------------------------------------------------------------------------
@@ -1305,25 +1445,25 @@ classdef MLFIMdl
 % -------- Analyse estimated parameters	-----------------------------------
 % -------------------------------------------------------------------------    
 
-	function se = calStdErr(hessian)
-	%Calculate standard errors given the hessian matrix
+        function se = calStdErr(hessian)
+        %Calculate standard errors given the hessian matrix
 
-		% check positive definite
-		try 
-			chol(hessian);
-		%	disp('Calculate the standard error')
-    		catch
-			disp('Matrix is not symmetric positive definite')
-		end
+            % check positive definite
+            try 
+                chol(hessian);
+            %	disp('Calculate the standard error')
+                catch
+                disp('Matrix is not symmetric positive definite')
+            end
 
-		fisher = inv(hessian);
-		se = sqrt(diag(fisher));		
+            fisher = inv(hessian);
+            se = sqrt(diag(fisher));		
         end
         
 % -------------------------------------------------------------------------    
 		
         function pval = calPVal(theta, se)
-	%Calculate p-value
+        %Calculate p-value
             % hypothesis test
             wald = theta ./ se;
             pval = 2 * ( 1 - normcdf(abs(wald)) ); % p-value
@@ -1331,18 +1471,18 @@ classdef MLFIMdl
         
 % -------------------------------------------------------------------------    
         
-	function star = calSignt(pval)
-	%Match p-value to stars
+        function star = calSignt(pval)
+        %Match p-value to stars
 
-		if pval < 0.01 
-			star = '$^{***}$';
-		elseif pval < 0.05
-			star = '$^{**}$';
-		elseif pval < 0.1
-			star = '$^{*}$';
-		else
-			star = '';
-		end
+            if pval < 0.01 
+                star = '$^{***}$';
+            elseif pval < 0.05
+                star = '$^{**}$';
+            elseif pval < 0.1
+                star = '$^{*}$';
+            else
+                star = '';
+            end
 
         end
         
@@ -1353,7 +1493,7 @@ classdef MLFIMdl
 % -------------------------------------------------------------------------    
 
         function newT = mergeFrailtyPath(t, iFrailty, oldT)
-	%Merge simulated frailty path with oldT based on TIME
+        %Merge simulated frailty path with oldT based on TIME
 
             frailtyTable = table;
             frailtyTable.TIME = t;
@@ -1364,23 +1504,58 @@ classdef MLFIMdl
 		
 % -------------------------------------------------------------------------    
 		
-	function newAge = transformAge(oldAge)
-		newAge = (oldAge - 65)/10;
-	end
-		
-% -------------------------------------------------------------------------
-
-	function newTime = transformTime(oldTime)
-		denom = 10;
-		if numel(num2str(oldTime(1))) == 4 % 4-digit year format
-			newTime = (oldTime - MLFIMdl.year_t1 + 1)/denom;
-		else
-			newTime = oldTime/denom;
-		end
+        function newAge = transformAge(oldAge)
+            newAge = (oldAge - 65)/10;
         end
 		
 % -------------------------------------------------------------------------
+
+        function newTime = transformTime(oldTime)
+            denom = 10;
+            if numel(num2str(oldTime(1))) == 4 % 4-digit year format
+                newTime = (oldTime - MLFIMdl.year_t1 + 1)/denom;
+            else
+                newTime = oldTime/denom;
+            end
+        end
 		
+% -------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------
+% --------  calculate expectation from transition probabilities -----------
+% -------------------------------------------------------------------------
+
+		function trsProbMulti = calTrsProbMulti(trsProbSingle)
+		%Calculate the multi-period transition probability given single-period transition probability
+			% saved the result in cell
+			% first column:     age
+			% second column:	transition probability matrix - single-period
+			% third column:     transition probability matrix - multi-period
+			
+			T = size(trsProbSingle, 1);
+			k = size(trsProbSingle, 2);
+
+			trsProbMulti = trsProbSingle;
+			trsProbMulti{1, k+1} = trsProbSingle{1, k};
+
+			for t = 2:T
+				% third column: multi-period transition probability
+				trsProbMulti{t, k+1} = trsProbMulti{t-1, k+1} * trsProbMulti{t, k};
+			end
+        end
+        
+% -------------------------------------------------------------------------
+
+        function y = calExpDur(p)
+        %Calculate expected no. of years spent in each state
+            % \int_0^t p dt ~= 0.5*p0 + p1 + p2 + ...
+            % p = [prob.healthy, prob.disable, prob.survival];
+
+            y = 0.5*p(1, :) + sum(p(2:end, :), 1);
+        end
+        
+% -------------------------------------------------------------------------
+        
     end % end methods(Static)
     
 end % end classdef
