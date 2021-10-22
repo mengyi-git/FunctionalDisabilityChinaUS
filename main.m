@@ -20,7 +20,7 @@ dataName = 'clhls';
 % --------------
 
 % 1. static / static_resid, 2. trend / trend_resid, 3. frailty / frailty_resid
-model = 'static';
+model = 'frailty';
 
 % For the frailty model, we consider two (2) cases for the latent process
 % (1) Random walk and (2) AR(1)
@@ -287,6 +287,7 @@ Input.time_ageStart = 1998; % 1998 or 2014
 
 % store the life expectancy results
 out = table; % 
+lwrupr = table; % record 95% CI
 Surv = struct; H1Prop = struct; H2Prop = struct;
 
 
@@ -301,16 +302,87 @@ for ageBeg = [65, 75]
         lifeTimeH2 = cell2mat(lifeTime(:, 2));
         lifeTimeHT = cell2mat(lifeTime(:, 3));
         firstXAll = cell2mat(cellfun(@(x) x(:), firstX, 'un', 0));
-        ratioAll = cell2mat(ratio);            
+        ratioAll = cell2mat(ratio); 
         
+        
+        meanLifeTimeH1 = mean(lifeTimeH1, 2);
+        meanLifeTimeH2 = mean(lifeTimeH2, 2);
+        meanLifeTimeHT = mean(lifeTimeHT, 2);
+        meanRatioAll = mean(ratioAll, 2);
+        
+        varLifeTimeH1 = var(lifeTimeH1, [], 2);
+        varLifeTimeH2 = var(lifeTimeH2, [], 2);
+        varLifeTimeHT = var(lifeTimeHT, [], 2);
+        varRatioAll = var(ratioAll, [], 2);        
+        
+        meanFirstXAll = cellfun(@mean, firstX);
+        varFirstXAll = cellfun(@var, firstX);
+        nFirstXAll = cellfun(@numel, firstX);
+
+        % mean; standard error; standard deviation
         out.([num2str(ageBeg), gender_i]) = ...
-            [mean(lifeTimeHT(:)); std(lifeTimeHT(:))/sqrt(numel(lifeTimeHT)); std(lifeTimeHT(:)); 0
-            mean(lifeTimeH1(:)); std(lifeTimeH1(:))/sqrt(numel(lifeTimeH1)); std(lifeTimeH1(:)); 0
-            mean(lifeTimeH2(:)); std(lifeTimeH2(:))/sqrt(numel(lifeTimeH2)); std(lifeTimeH2(:)); 0
-            mean(ratioAll(:)); std(ratioAll(:))/sqrt(numel(ratioAll)); std(ratioAll(:)); 0
-            mean(firstXAll); std(firstXAll)/sqrt(numel(firstXAll)); std(firstXAll)];
-         
+            [mean(meanLifeTimeHT); sqrt(sum(varLifeTimeHT/nSimObs)) / nSimPsi; mean(sqrt(varLifeTimeHT)); 0
+            mean(meanLifeTimeH1); sqrt(sum(varLifeTimeH1/nSimObs)) / nSimPsi; mean(sqrt(varLifeTimeH1)); 0
+            mean(meanLifeTimeH2); sqrt(sum(varLifeTimeH2/nSimObs)) / nSimPsi; mean(sqrt(varLifeTimeH2)); 0
+            mean(meanRatioAll); sqrt(sum(varRatioAll/nSimObs)) / nSimPsi; mean(sqrt(varRatioAll)); 0
+            mean(meanFirstXAll); sqrt(sum(varFirstXAll./nFirstXAll)) / nSimPsi; mean(sqrt(varFirstXAll))];    
+        
+        % lwr and upr
+        lwr = 0.025; upr = 0.975;
+        lwrupr.([num2str(ageBeg), gender_i]) = ...
+            [quantile(meanLifeTimeHT, [lwr, upr]); zeros(3, 2)
+            quantile(meanLifeTimeH1, [lwr, upr]); zeros(3, 2)
+            quantile(meanLifeTimeH2, [lwr, upr]); zeros(3, 2)
+            quantile(meanRatioAll, [lwr, upr]); zeros(3, 2)
+            quantile(meanFirstXAll, [lwr, upr]); zeros(3, 2)];
     end
+end
+
+%%
+
+time_ageStart = [1998 2014];
+nTime = numel(time_ageStart);
+
+nSimPsi = 1000; % no. of frailty paths in each simulation
+
+
+
+out = cell(nTime, Mdl.N_H_STATE-1);
+
+N_H_STATE = Mdl.N_H_STATE;
+for tIndex = 1:nTime
+    Input.time_ageStart = time_ageStart(tIndex);
+    
+    path = simulatePath(Mdl, Input, 2014, nSimPsi);
+    for initHState = 1:N_H_STATE-1
+        
+        avgYear = zeros(nSimPsi, N_H_STATE-1);
+%         lifeExp = zeros(nSimPsi, 1);
+        entryAge = zeros(nSimPsi, 1);
+        
+       
+        for iSim = 1:nSimPsi
+            
+            if any(strcmp({'frailty', 'frailty_resid'}, model))
+                Input.iPsiPath = path(:, iSim);
+            else
+                Input.iPsiPath = [];
+            end             
+            
+            avgYear(iSim, :) = calAvgYear(Mdl, Input, initHState);
+%             lifeExp(iSim) = calLifeExp(Mdl, Input, initHState);
+            entryAge(iSim) = calFirstEntryAge(Mdl, Input, 2, initHState);            
+        end
+        
+        lifeExp = sum(avgYear, 2);
+        out{tIndex, initHState} = [avgYear, lifeExp, entryAge];
+    end
+end
+
+if ~any(strcmp({'frailty', 'frailty_resid'}, Mdl.model))
+    out = cell2mat(out);
+elseif strcmp(Input.type, 'period')
+    out = cell2mat(out);
 end
 
 
@@ -368,4 +440,3 @@ dof = uNPara - rNPara;
 % Display the results
 % --------------------
 disp([num2str(stat), ' & ', MLFIMdl.calSignt(pValue)])
-
