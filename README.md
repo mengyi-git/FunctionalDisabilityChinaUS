@@ -1,6 +1,6 @@
 # Introduction
 
-The code accompanies the paper [Functional Disability with Systematic Trends and Uncertainty: A Comparison between China and the U.S.] (https://doi.org/10.1017/S1748499521000233) by Fu, Sherris and Xu. We also provide the datasets used for model estimation.
+The code accompanies the paper [Functional Disability with Systematic Trends and Uncertainty: A Comparison between China and the U.S.](https://doi.org/10.1017/S1748499521000233) by Fu, Sherris and Xu. We also provide the datasets used for model estimation.
 
 
 # How to use the code
