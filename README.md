@@ -63,7 +63,7 @@ Time t<sub>i+1</sub> is the earliest of
   * date of exiting the survey
   * date of observing health transitions.
 
-Note that the definition of t<sub>i</sub> is different from that of t<sub>j</sub> in Fu et al. (2021).
+Note that the definition of t<sub>i</sub> is different from that of t<sub>j</sub> in the paper.
 
 # Acknowledgement
 The following functions are from external sources.
