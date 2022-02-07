@@ -1,6 +1,6 @@
 # Introduction
 
-The code accompanies the paper "Functional Disability with Systematic Trends and Uncertainty: A Comparison between China and the U.S." by Fu, Sherris and Xu. We also provide the datasets used for model estimation.
+The code accompanies the paper "Functional Disability with Systematic Trends and Uncertainty: A Comparison between China and the U.S." [DOI: https://doi.org/10.1017/S1748499521000233](https://doi.org/10.1017/S1748499521000233) by Fu, Sherris and Xu. We also provide the datasets used for model estimation.
 
 
 # How to use the code
@@ -63,6 +63,7 @@ Time t<sub>i+1</sub> is the earliest of
   * date of exiting the survey
   * date of observing health transitions.
 
+Note that the definition of t<sub>i</sub> is different from that of t<sub>j</sub> in Fu et al. (2021).
 
 # Acknowledgement
 The following functions are from external sources.
