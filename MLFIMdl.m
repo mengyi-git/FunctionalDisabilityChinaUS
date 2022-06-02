@@ -464,10 +464,7 @@ classdef MLFIMdl
             start_index = numel(theta_input) + 1;
 
             thetaInit = zeros(nPara, 1);
-            thetaInit(1:numel(theta_input)) = theta_input;
-
-            % initialise next point
-            next_pts = 0;
+            thetaInit(1:numel(theta_input)) = theta_input;           
 
             next_pts_step_array = [4 2 1 0.5 0.1];
             for iParam = start_index:nPara
@@ -476,6 +473,8 @@ classdef MLFIMdl
 
                 param_index = iParam; % which parameter to check?    
 
+                % initialise next point
+                next_pts = 0;
                 for iNextStep = 1:length(next_pts_step_array)
 
                     next_pts_step = next_pts_step_array(iNextStep);
